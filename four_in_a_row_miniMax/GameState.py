@@ -26,14 +26,16 @@ class GameState(object):
 
 
 
-    def detect_win(self, player):
-    def detect_tie(self):
+    #def detect_win(self, player):
+    #def detect_tie(self):
 
 
-    def calculate_eval(self, player):
-    def detect_3rows(self, player):
-    def detect_2rows(self, player):
+    #def calculate_eval(self, player):
+    #    #heuristic calculations
+
+    #def detect_3rows(self, player):
+    #def detect_2rows(self, player):
 
     def find_playable(self):
-
+        return 
 

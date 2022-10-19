@@ -9,8 +9,9 @@ class Player(object):
 
 
     def generate_move(self, current_state):
+            #minimax function
 
-    def create_gametree(self, current_state, depth):
+    #def create_gametree(self, current_state, depth):
 
 
 
