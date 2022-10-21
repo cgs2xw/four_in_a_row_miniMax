@@ -7,6 +7,7 @@ class GameState(object):
 
 
         self.state = []
+        self.movesMade = []
 
         if (not(isinstance(state, GameState))):
             for i in range(5):
@@ -23,6 +24,7 @@ class GameState(object):
 
     def set(self, x, y, value):
         self.state[x][y] = value
+        self.movesMade.append([x,y])
 
     def print(self):
         for row in self.state:
@@ -42,13 +44,11 @@ class GameState(object):
 
     def find_playable(self):
         avaliableMoves = [];
-        for x in range(len(self.state)):
-            for y in range(len(self.state[0])):
-                if self.get(x,y) == 'x' or self.get(x,y) == 'o':
-                    for i in range(-1,2): 
-                        for j in range(-1,2):
-                            if (x+i) >= 0 and (x+i) < len(self.state) and (y+j) >= 0 and (y+j) < len(self.state[0]) and self.get(x+i,y+j) != 'x' and self.get(x+i,y+j) != 'o':
-                                if [x+i,y+j] not in avaliableMoves: #checking for duplicates not very efficent but works couldn't put the list in a set
-                                    avaliableMoves.append([x+i,y+j])
+        for move in self.movesMade:
+           for i in range(-1,2): 
+                for j in range(-1,2):
+                    if (move[0]+i) >= 0 and (move[0]+i) < len(self.state) and (move[1]+j) >= 0 and (move[1]+j) < len(self.state[0]) and self.get(move[0]+i,move[1]+j) != 'x' and self.get(move[0]+i,move[1]+j) != 'o':
+                        if [move[0]+i,move[1]+j] not in avaliableMoves: #checking for duplicates not very efficent but works couldn't put the list in a set
+                            avaliableMoves.append([move[0]+i,move[1]+j])
         return avaliableMoves
 
