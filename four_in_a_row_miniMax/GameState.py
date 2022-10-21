@@ -19,10 +19,14 @@ class GameState(object):
 
     def get(self, x, y):
         
-        return self.state[y][x]
+        return self.state[x][y]
 
     def set(self, x, y, value):
-        self.state[y][x] = value
+        self.state[x][y] = value
+
+    def print(self):
+        for row in self.state:
+            print(row)
 
 
 
@@ -37,5 +41,14 @@ class GameState(object):
     #def detect_2rows(self, player):
 
     def find_playable(self):
-        return 
+        avaliableMoves = [];
+        for x in range(len(self.state)):
+            for y in range(len(self.state[0])):
+                if self.get(x,y) == 'x' or self.get(x,y) == 'o':
+                    for i in range(-1,2): 
+                        for j in range(-1,2):
+                            if (x+i) >= 0 and (x+i) < len(self.state) and (y+j) >= 0 and (y+j) < len(self.state[0]) and self.get(x+i,y+j) != 'x' and self.get(x+i,y+j) != 'o':
+                                if [x+i,y+j] not in avaliableMoves: #checking for duplicates not very efficent but works couldn't put the list in a set
+                                    avaliableMoves.append([x+i,y+j])
+        return avaliableMoves
 
