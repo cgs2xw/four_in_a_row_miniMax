@@ -12,7 +12,17 @@ class Player(object):
         pass
             #minimax function
 
-    #def create_gametree(self, current_state, depth):
+    def create_gametree(self, current_state: GameState, depth):
+        starting_node = Node(current_state)
+        for move in current_state.find_playable():
+            new_state = current_state.set(move[0], move[1])
+            Node(new_state, parent = starting_node)
+        return starting_node
+
+    def print_tree(start_node):
+        for pre, fill, node in RenderTree(start_node):
+            print("%s%s" % (pre, node.name))
+
 
 
 
