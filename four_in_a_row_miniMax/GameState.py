@@ -15,6 +15,8 @@ class GameState(object):
         self.oneOpen3 = [0,0]
         self.twoOpen2 = [0,0]
         self.oneOpen2 = [0,0]
+        self.win = False
+        self.draw = False
 
         self.eval = [0,0]
         self.moveNumber = 0
@@ -30,20 +32,23 @@ class GameState(object):
         else:
             for i in range(5):
                 self.state.append(GameState[i])
-            self.moves = GameState.moves
+            self.moves = state.moves
 
-            self.twoOpen3 = GameState.twoOpen3
-            self.twoOpen2 = GameState.oneOpen2
-            self.twoOpen2 = GameState.twoOpen2
-            self.oneOpen2 = GameState.oneOpen2
-            self.moveNumber = GameState.moveNumber
+            self.twoOpen3 = state.twoOpen3
+            self.twoOpen2 = state.oneOpen2
+            self.twoOpen2 = state.twoOpen2
+            self.oneOpen2 = state.oneOpen2
+            self.moveNumber = state.moveNumber
+            self.win = state.win
+            self.draw = state.draw
+            self.eval = state.eval
 
 
 
     #returns the value in the given position
     def get(self, x, y):
         
-        if(x > 0 and x < 6 and y > 0 and y < 5):
+        if(x >= 0 and x < 6 and y >= 0 and y < 5):
             return self.state[y][x]
         else:
             return 'w'          # W for wall e.g. edge of board/outside board. really only need to be differnt than x o and 0
@@ -65,12 +70,18 @@ class GameState(object):
                         self.calculate_eval()
 
                     else:
+                        self.win = True
                         if (value == 'x'):
                             self.eval[0] = 1000
                             self.eval[1] = -1000
                         else:
                             self.eval[1] = 1000
                             self.eval[0] = -1000
+
+                if(self.moveNumber == 30 and self.win != True):
+                    self.draw = True
+
+
                 else:
                     raise Exception("move has already been played")
             else:
@@ -109,97 +120,123 @@ class GameState(object):
 
         for a in range(-1,2):                                               #offsets of -1 to 1 
             for b in range(-1,2):                                           #check all adjacent squares 
-                if((x+a >= 0 and x+a < 6) and (y+b >= 0 and y+b < 5)):        #check if in board 
-                    searchType = self.get(x+a, y+b)
-                    #if not in middleTrack, to avoid double counting of x X x when searching left and right
-                    if((x+a, y+b) not in middleTrack):
-                        if(searchType != 0):                            #check if not empty
+                if not(a == 0 and b == 0):
+                    if((x+a >= 0 and x+a < 6) and (y+b >= 0 and y+b < 5)):        #check if in board 
+                        searchType = self.get(x+a, y+b)
+                        #if not in middleTrack, to avoid double counting of x X x when searching left and right
+                        if((x+a, y+b) not in middleTrack):
+                            if(searchType != 0):                            #check if not empty
 
-############################if the adjacent square is the same as middle###########################################################
-                            if(searchType == baseMoveType):
+    ############################if the adjacent square is the same as middle###########################################################
+                                if(searchType == baseMoveType):
                            
-                                #if middle value is between too of is own kind (x X x)
-                                if(self.get(x-a, y-b) == searchType):
-                                    middleTrack.add((x-a,y-b))
+                                    #if middle value is between too of is own kind (x X x)
+                                    if(self.get(x-a, y-b) == searchType):
+                                        middleTrack.add((x-a,y-b))
 
-                                    #four in a row either (x x X x) or (x X x x)
-                                    if(self.get(a-(2*a), y-(2*b)) == searchType or self.get(a+(2*a), y+(2*b)) == searchType):
-                                        return True
+                                        #four in a row either (x x X x) or (x X x x)
+                                        if(self.get(x-(2*a), y-(2*b)) == searchType or self.get(x+(2*a), y+(2*b)) == searchType):
+                                            return True
 
-                                    #two open ( 0 x X x 0)
-                                    elif(self.get(a-(2*a), y-(2*b)) == '0' and self.get(a+(2*a), y+(2*b)) == '0'):
-                                        if(baseMoveType == 'x'): 
-                                            self.twoOpen3[0] += 1
+                                        #two open ( 0 x X x 0)
+                                        elif(self.get(x-(2*a), y-(2*b)) == 0 and self.get(x+(2*a), y+(2*b)) == 0):
+                                            if(baseMoveType == 'x'): 
+                                                self.twoOpen3[0] += 1
+                                            else:
+                                                self.twoOpen3[1] += 1
+
+                                        #one open (0 x X x) or (x X x 0)
+                                        elif(self.get(x-(2*a), y-(2*b)) == 0 or self.get(x+(2*a), y+(2*b)) == 0):
+                                            if(baseMoveType == 'x'): 
+                                                self.oneOpen3[0] += 1
+                                            else:
+                                                self.oneOpen3[1] += 1
+
+
+                                    #four in a row (X x x x)
+                                    elif(self.get(x+(2*a), (y+(2*b))) == baseMoveType and self.get(x+(3*a), (y+(3*b))) == baseMoveType):
+                                            return True
+
+                                    #if three in a row
+                                    elif(self.get(x+(2*a), (y+(2*b))) == baseMoveType):
+                                        #if two sides open (0 X x x 0)
+                                        if(self.get(x+(3*a), (y+(3*b))) == 0 and self.get(x-a, y-b) == 0): 
+                                            if(baseMoveType == 'x'): 
+                                                self.twoOpen3[0] += 1 
+                                                self.twoOpen2[0] += -1
+                                            else:
+                                                self.twoOpen3[1] += 1
+                                                self.twoOpen2[1] += -1
+
+                                        #if one side open (X x x 0)
+                                        elif(self.get(x+(3*a), (y+(3*b))) == 0 or self.get(x-a, y-b) == 0):
+                                            if(baseMoveType == 'x'): 
+                                                self.oneOpen3[0] += 1
+                                                self.twoOpen2[0] += -1
+                                            else:
+                                                self.oneOpen3[1] += 1
+                                                self.twoOpen2[1] += -1
+
+                                        #if placed makes 0 open 3 (o x x X o)
                                         else:
-                                            self.twoOpen3[1] += 1
+                                            if(baseMoveType == 'x'): 
+                                                self.oneOpen2[0] += -1
+                                            else:
+                                                self.oneOpen2[1] += -1
 
-                                    #one open (0 x X x) or (x X x 0)
-                                    elif(self.get(a-(2*a), y-(2*b)) == '0' or self.get(a+(2*a), y+(2*b)) == '0'):
-                                        if(baseMoveType == 'x'): 
-                                            self.oneOpen3[0] += 1
-                                        else:
-                                            self.oneOpen3[1] += 1
-
-
-                                #four in a row (X x x x)
-                                elif(self.get(x+(2*a), (y+(2*b))) == baseMoveType and self.get(x+(3*a), (y+(3*b))) == baseMoveType):
-                                        return True
-
-                                #if two sides open (0 X x x 0)
-                                elif(self.get(x+(2*a), (y+(2*b))) == 0 and self.get(x-a, y-b) == 0):
-                                    if(baseMoveType == 'x'): 
-                                        self.twoOpen2[0] += 1
+                                     #if two in a row
                                     else:
-                                        self.twoOpen2[1] += 1
+                                        #two open
+                                        if(self.get(x-a, y-b) == 0 and self.get(x+(2*a), (y+(2*b))) == 0):
+                                           if(baseMoveType == 'x'): 
+                                                self.twoOpen2[0] += 1
+                                           else:
+                                                self.twoOpen2[1] += 1
+                                        #one open
+                                        elif(self.get(x-a, y-b) == 0 or self.get(x+(2*a), (y+(2*b))) == 0):
+                                            if(baseMoveType == 'x'): 
+                                                self.oneOpen2[0] += 1
+                                            else:
+                                                self.oneOpen2[1] += 1
 
-                                #if one side open (X x x 0)
-                                elif(self.get(x+(2*a), (y+(2*b))) == 0 or self.get(x-a, y-b) == 0):
-                                    if(baseMoveType == 'x'): 
-                                        self.twoOpen2[0] += 1
-                                    else:
-                                        self.twoOpen2[1] += 1
 
-                                #if placed makes 0 open 3 (o x x X o)
-                                else:
-                                    if(baseMoveType == 'x'): 
-                                        self.twoOpen2[0] += -1
-                                    else:
-                                        self.twoOpen2[1] += -1
+
+
 
                         
-############################if the adjacent square the oposite of middle ( X o)###################################################
-                            else:
-                                #if three in a row  of other type next to start position (X o o o)
-                                if(self.get(x+a, y+b) == SW(baseMoveType) and self.get(x+(2*a), (y+(2*b))) == SW(baseMoveType) and self.get(x+(3*a), (y+(3*b)) == SW(baseMoveType))):
-                                    if(self.get(x+(4*a), (y+(4*b))) == 0):
-                                        if(baseMoveType == 'x'):
-                                            self.twoOpen3[1] += -1
-                                            self.oneOpen3[1] += 1
-                                        else:
-                                           self.twoOpen3[0] += -1
-                                           self.oneOpen3[0] += 1
+    ############################if the adjacent square the oposite of middle ( X o)###################################################
+                                else:
+                                    #if three in a row  of other type next to start position (X o o o)
+                                    if(self.get(x+a, y+b) == SW(baseMoveType) and self.get(x+(2*a), (y+(2*b))) == SW(baseMoveType) and self.get(x+(3*a), (y+(3*b)) == SW(baseMoveType))):
+                                        if(self.get(x+(4*a), (y+(4*b))) == 0):
+                                            if(baseMoveType == 'x'):
+                                                self.twoOpen3[1] += -1
+                                                self.oneOpen3[1] += 1
+                                            else:
+                                               self.twoOpen3[0] += -1
+                                               self.oneOpen3[0] += 1
                                         
-                                    else:
-                                        if(baseMoveType == 'x'):
-                                            self.oneOpen3[1] += -1
                                         else:
-                                            self.oneOpen3[0] += -1
+                                            if(baseMoveType == 'x'):
+                                                self.oneOpen3[1] += -1
+                                            else:
+                                                self.oneOpen3[0] += -1
 
-                                #if two in a row of other type next to start position(X o o)
-                                elif((self.get(x+a, y+b) == SW(baseMoveType) and self.get(x+(2*a), (y+(2*b))) == SW(baseMoveType))):
-                                    if(self.get(x+(3*a), (y+(3*b))) == 0):
-                                        if(baseMoveType == 'x'):
-                                            self.twoOpen2[1] += -1
-                                            self.oneOpen2[1] += 1
-                                        else:
-                                           self.twoOpen2[0] += -1
-                                           self.oneOpen2[0] += 1
+                                    #if two in a row of other type next to start position(X o o)
+                                    elif((self.get(x+a, y+b) == SW(baseMoveType) and self.get(x+(2*a), (y+(2*b))) == SW(baseMoveType))):
+                                        if(self.get(x+(3*a), (y+(3*b))) == 0):
+                                            if(baseMoveType == 'x'):
+                                                self.twoOpen2[1] += -1
+                                                self.oneOpen2[1] += 1
+                                            else:
+                                               self.twoOpen2[0] += -1
+                                               self.oneOpen2[0] += 1
 
-                                    else:
-                                        if(baseMoveType == 'x'):
-                                            self.oneOpen2[1] += -1
                                         else:
-                                            self.oneOpen2[0] += -1
+                                            if(baseMoveType == 'x'):
+                                                self.oneOpen2[1] += -1
+                                            else:
+                                                self.oneOpen2[0] += -1
         return False
 
 
