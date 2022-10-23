@@ -3,8 +3,29 @@ from GameState import GameState
 
 
 if __name__ == "__main__":
-    mystate = GameState()
-    mystate.set(2,3,'x')
-    mystate.set(2,2,'o')
-    mystate.print()
-    print(mystate.find_playable())
+
+
+    print("start miniMax 1\nstart manual 0")
+    a = int(input())
+
+    if(a == 1):
+        pass
+    
+    elif(a == 0):
+        mystate = GameState()
+        mystate.print()
+        while(True):
+            x = input("x:")
+            x = int(x) - 1
+            y = input("y:")
+            y = int(y) - 1
+            value = input("value:")
+
+            mystate.set(x,y, value)
+            mystate.printAll()
+
+
+        
+
+
+   
