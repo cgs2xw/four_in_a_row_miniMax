@@ -1,4 +1,5 @@
 from GameState import GameState
+from Game import Game
 
 
 
