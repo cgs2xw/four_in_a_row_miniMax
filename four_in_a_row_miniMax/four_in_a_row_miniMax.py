@@ -1,10 +1,8 @@
 from GameState import GameState
+from Game import Game
 
 
 
 if __name__ == "__main__":
-    mystate = GameState()
-    mystate.set(2,3,'x')
-    mystate.set(2,2,'o')
-    mystate.print()
-    print(mystate.find_playable())
+    current_game = Game()
+    current_game.startGame()
