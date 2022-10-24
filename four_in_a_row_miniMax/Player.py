@@ -13,14 +13,14 @@ class Player(object):
         #minimax function
         bestState = None
         best_eval = -10000000000
-        startNode = self.create_gametree(current_state, depth, value)
-        if value == 'x':     
+        startNode = self.create_gametree(current_state, depth, value) # creation of the tree
+        if value == 'x':      # looking for best eval in the next level down
             for child in startNode.children:
                 if child.name.eval[0] > best_eval:
                     bestState = child.name
                     best_eval = child.name.eval[0]
            
-        if value == 'o':
+        if value == 'o': # looking for best eval in the next level down
             for child in startNode.children:
                 if child.name.eval[1] > best_eval:
                     bestState = child.name
