@@ -16,9 +16,17 @@ class Game(object):
         self.currentState.set(2,3,'x')
         self.currentState.set(2,2,'o')
         
+       
+        i = 0
+        while(not (self.currentState.win and self.currentState.draw)):
+            if i % 2 == 0:
+                self.currentState = self.player1.generate_move(self.currentState, 'x', 2)
+            else:
+                self.curentState = self.player2.generate_move(self.currentState, 'o', 4)
+            i += 1
+            self.currentState.printAll()
+        
 
-        starting_node = self.player1.create_gametree(self.currentState, 2)
-        self.player1.print_tree(starting_node)
 
 
 

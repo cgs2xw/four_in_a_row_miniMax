@@ -1,4 +1,4 @@
-
+import copy
 
 
 class GameState(object):
@@ -6,8 +6,8 @@ class GameState(object):
     def __init__(self, state = None):
         #GameState attributes
         self.state = []     #board state
-        self.moves = set()    #set with all moves played (x, y, value)
-
+        self.moves = []   #set with all moves played (x, y, value)
+        self.lastMove = None
         #number in-a-rows for each type
         # pos 0 = x
         # pos 1 = o     
@@ -24,32 +24,23 @@ class GameState(object):
          
 
         #if optional parameter not given, initiaize to empty
-        if (not(isinstance(state, GameState))):
+        if not state:
             for i in range(5):
                 self.state.append([0] * 6)
-
         #if Gamestate object is passed to constructor
         else:
-            for i in range(5):
-                self.state.append(GameState[i])
-            self.moves = state.moves
-
-            self.twoOpen3 = state.twoOpen3
-            self.twoOpen2 = state.oneOpen2
-            self.twoOpen2 = state.twoOpen2
-            self.oneOpen2 = state.oneOpen2
-            self.moveNumber = state.moveNumber
-            self.win = state.win
-            self.draw = state.draw
-            self.eval = state.eval
+            print("deep copy")
+            self = copy.deepcopy(state)
+            
+            
 
 
 
     #returns the value in the given position
     def get(self, x, y):
         
-        if(x >= 0 and x < 6 and y >= 0 and y < 5):
-            return self.state[y][x]
+        if(x >= 0 and x < 5 and y >= 0 and y < 6):
+            return self.state[x][y]
         else:
             return 'w'          # W for wall e.g. edge of board/outside board. really only need to be differnt than x o and 0
 
@@ -59,12 +50,13 @@ class GameState(object):
         
         
         if (value == 'x' or value == 'o'):
-            if(x >= 0 and x < 6 and y >= 0 and y < 5):
+            if(x >= 0 and x < 5 and y >= 0 and y < 6):
                 move = (x,y, value)
                 if move not in self.moves:
-                    self.moves.add(move)
-                    self.state[y][x] = value
+                    self.moves.append(move)
+                    self.state[x][y] = value
                     self.moveNumber += 1
+                    self.lastMove = move
 
                     if not (self.find_in_a_rows(x,y)):
                         self.calculate_eval()
@@ -78,8 +70,8 @@ class GameState(object):
                             self.eval[1] = 1000
                             self.eval[0] = -1000
 
-                if(self.moveNumber == 30 and self.win != True):
-                    self.draw = True
+                    if(self.moveNumber == 30 and self.win != True):
+                        self.draw = True
 
 
                 else:
@@ -121,7 +113,7 @@ class GameState(object):
         for a in range(-1,2):                                               #offsets of -1 to 1 
             for b in range(-1,2):                                           #check all adjacent squares 
                 if not(a == 0 and b == 0):
-                    if((x+a >= 0 and x+a < 6) and (y+b >= 0 and y+b < 5)):        #check if in board 
+                    if((x+a >= 0 and x+a < 5) and (y+b >= 0 and y+b < 6)):        #check if in board 
                         searchType = self.get(x+a, y+b)
                         #if not in middleTrack, to avoid double counting of x X x when searching left and right
                         if((x+a, y+b) not in middleTrack):
@@ -268,11 +260,11 @@ class GameState(object):
     #def find_playable(self):
     def find_playable(self):
         avaliableMoves = [];
-        for move in self.movesMade:
+        for move in self.moves:
            for i in range(-1,2): 
                 for j in range(-1,2):
                     if (move[0]+i) >= 0 and (move[0]+i) < len(self.state) and (move[1]+j) >= 0 and (move[1]+j) < len(self.state[0]) and self.get(move[0]+i,move[1]+j) != 'x' and self.get(move[0]+i,move[1]+j) != 'o':
-                        if [move[0]+i,move[1]+j] not in avaliableMoves: #checking for duplicates not very efficent but works couldn't put the list in a set
+                        if [move[0]+i,move[1]+j] not in avaliableMoves and (move[0]+i, move[1]+j, 'x') not in self.moves and (move[0]+i,move[1]+j,'y') not in self.moves: #checking for duplicates not very efficent but works couldn't put the list in a set
                             avaliableMoves.append([move[0]+i,move[1]+j])
         return avaliableMoves
 
