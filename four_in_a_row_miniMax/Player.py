@@ -20,22 +20,22 @@ class Player(object):
                     bestState = child.name
                     best_eval = child.name.eval[0]
            
-        if value == 'o': # looking for best eval in the next level down
+        else: # looking for best eval in the next level down
             for child in startNode.children:
                 if child.name.eval[1] > best_eval:
                     bestState = child.name
-                    best_eval = child.name.eval[1]
-        return bestState  
+                    best_eval = child.name.eval[1]  
+            
+        return copy.deepcopy(bestState)  
 
     def create_gametree(self, current_state: GameState, depth, value,starting_node = None, pruneMax= None):
         if not starting_node:
             starting_node = Node(current_state)
 
-        if not pruneMax:
+        if not pruneMax or pruneMax == -10000000000000 or pruneMax == 1000000000000:
             pruneMax = -10000000000000 if depth % 2 != 0 else 1000000000000
 
-        evalNumber = -10000000000000 if depth % 2 == 0 else 1000000000000
-        bestEval = -10000000000000 if depth % 2 == 0 else 1000000000000
+        evalNumber = -10000000000000 if depth % 2 != 0 else 1000000000000
 
         for available_move in current_state.find_playable():
             new_state = copy.deepcopy(current_state)
@@ -45,42 +45,41 @@ class Player(object):
                 new_state.set(available_move[0], available_move[1], value)
             else: # min player making a move
                 new_state.set(available_move[0], available_move[1], notValue)
-            #new_state.printAll()
-            #print("")
-            new_node = Node(new_state, parent = starting_node) #stting the node for the min or max
+
+            new_node = Node(new_state, parent = starting_node) #setting the node for the min or max
 
             if depth > 1: #if we haven't gone far enough down recall the function and do some evaluations to pick the best option and set that to eval
                 childEval = self.create_gametree(new_state, depth - 1, value, new_node, pruneMax).name.eval
                 if value == 'x': 
                     if depth % 2 == 0: ## if max and the eval is greater for this child than the previous greatest set the eval to it for x
-                        if childEval[0] > evalNumber:
+                        if childEval[0] < evalNumber:
                             evalNumber = childEval[0]
-                        if childEval[0] < pruneMax:
+                        if childEval[0] >= pruneMax: # if this child is less than the prune value skip the rest these children
                             continue
                     else: ## min
-                        if childEval[0] < evalNumber: 
+                        if childEval[0] > evalNumber: 
                             evalNumber = childEval[0]
-                        if childEval[0] > pruneMax:
-                            continue
+                        if childEval[0] <= pruneMax:
+                            continue    # if this value is more than the prune value skip the rest of these children
                     starting_node.name.eval[0] = evalNumber
-                elif value == 'o': # if max and eval is ess than the eval but for o
+                elif value == 'o': # same thing for o
                     if depth % 2 == 0:
-                        if childEval[1] > evalNumber:
+                        if childEval[1] < evalNumber:
                             evalNumber = childEval[1]
-                        if childEval[1] < pruneMax:
+                        if childEval[1] >= pruneMax:
                             continue
                     else: ## min
-                        if childEval[1] < evalNumber: 
+                        if childEval[1] > evalNumber: 
                             evalNumber = childEval[1]
-                        if childEval[1] > pruneMax:
+                        if childEval[1] <= pruneMax:
                             continue
                     starting_node.name.eval[1] = evalNumber
-            pruneMax = starting_node.name.eval[0] if value == 'x' else starting_node.name.eval[1]
+            pruneMax = starting_node.name.eval[0] if value == 'x' else starting_node.name.eval[1] 
         return starting_node
 
     def print_tree(self, start_node):
         for pre, fill, node in RenderTree(start_node):
-            print("%s%s" % (pre, node.name))
+            print("%s%s" % (pre, node.name.state))
 
 
 
